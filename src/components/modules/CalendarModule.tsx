@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar as CalendarIcon, PlusCircle, ListCheck, Heart, DollarSign } from "lucide-react";
+import { Calendar as CalendarIcon, PlusCircle, ListCheck, Heart, DollarSign, Check } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 
 const CalendarModule = () => {

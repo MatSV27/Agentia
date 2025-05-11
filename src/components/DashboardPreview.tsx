@@ -1,10 +1,16 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Calendar, Check, PlusCircle } from "lucide-react";
+import { useState, useEffect } from "react";
 
 const DashboardPreview = () => {
+  const [userName, setUserName] = useState("Usuario");
+  useEffect(() => {
+    const name = localStorage.getItem("userName");
+    if (name) setUserName(name);
+  }, []);
+
   return (
     <section className="py-20">
       <div className="container">
@@ -22,7 +28,7 @@ const DashboardPreview = () => {
             {/* User greeting and stats */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
               <div>
-                <h3 className="text-2xl font-bold mb-1">¡Hola, Alexandra! 👋</h3>
+                <h3 className="text-2xl font-bold mb-1">¡Hola, {userName}! 👋</h3>
                 <p className="text-muted-foreground">Hoy tienes 2 bloques libres para avanzar en tus metas 🎯</p>
               </div>
               

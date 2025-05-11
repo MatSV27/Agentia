@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,27 +5,44 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Leaf } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import config from "@/lib/config";
+import API_CONFIG from "@/config/api";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
-    // Simulate login - in a real app, this would be an API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const data = await API_CONFIG.fetchApi('/api/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password })
+      });
+
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userName', data.name);
+      
       toast({
         title: "¡Inicio de sesión exitoso!",
         description: "Bienvenido/a de vuelta a AgentIA.",
       });
       navigate("/dashboard");
-    }, 1000);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Error al conectar con el servidor.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

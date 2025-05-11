@@ -1,20 +1,26 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Leaf, ArrowLeft } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const Profile = () => {
-  const [name, setName] = useState("Alexandra");
-  const [email, setEmail] = useState("alexandra@ejemplo.com");
+  const [name, setName] = useState("Usuario");
+  const [email, setEmail] = useState("");
   const [bio, setBio] = useState("Me encanta organizar mi vida y desarrollar buenos hábitos.");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const storedName = localStorage.getItem("userName");
+    if (storedName) setName(storedName);
+    const storedEmail = localStorage.getItem("userEmail");
+    if (storedEmail) setEmail(storedEmail);
+  }, []);
 
   const handleUpdateProfile = (e: React.FormEvent) => {
     e.preventDefault();

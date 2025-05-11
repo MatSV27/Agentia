@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,7 +15,8 @@ import {
   TrendingUp, 
   Leaf,
   LogOut,
-  User
+  User,
+  BarChart2
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -29,18 +30,131 @@ import HabitModule from "@/components/modules/HabitModule";
 import WellbeingModule from "@/components/modules/WellbeingModule";
 import CalendarModule from "@/components/modules/CalendarModule";
 import { useToast } from "@/components/ui/use-toast";
+import axios from "axios";
+
+// Interfaces para datos
+interface Habit {
+  id: number;
+  name: string;
+  current_streak: number;
+  completed_today: boolean;
+  category: {
+    name: string;
+    color: string;
+  };
+}
+
+interface Event {
+  id: number;
+  title: string;
+  start_datetime: string;
+  end_datetime: string;
+  location: string;
+  is_habit?: boolean;
+  completed?: boolean;
+  category: {
+    name: string;
+    color: string;
+  };
+}
+
+interface FinanceSummary {
+  balance_total: number;
+  gastos_mes: number;
+  ingresos_mes: number;
+  categorias: any[];
+  metas_ahorro: {
+    id: number;
+    name: string;
+    target_amount: number;
+    current_amount: number;
+  }[];
+}
+
+interface UserData {
+  user: {
+    name: string;
+    email: string;
+  };
+  habits: Habit[];
+  events: Event[];
+  finance: FinanceSummary;
+  transactions: any[];
+}
 
 const Dashboard = () => {
   const [selectedTab, setSelectedTab] = useState("overview");
   const navigate = useNavigate();
   const { toast } = useToast();
   
+  // Estado para almacenar datos del usuario
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [todayDate, setTodayDate] = useState("");
+  
+  // Obtener el nombre del usuario del almacenamiento local
+  const userName = localStorage.getItem('userName') || 'Usuario';
+  
+  // Cargar datos del usuario al inicio
+  useEffect(() => {
+    fetchUserData();
+    
+    // Obtener la fecha actual formateada
+    const now = new Date();
+    const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+    setTodayDate(now.toLocaleDateString('es-ES', options));
+  }, []);
+  
+  // Función para obtener datos del usuario
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log("No hay token de autenticación, redirigiendo a login");
+        navigate('/login');
+        return;
+      }
+      
+      // Usar el endpoint consolidado del chatbot para obtener todos los datos
+      const response = await axios.get('/api/chatbot/user-data', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data) {
+        setUserData(response.data);
+      }
+    } catch (error) {
+      console.error("Error al cargar datos del usuario:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar tus datos. Por favor, intenta de nuevo.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   const handleLogout = () => {
+    // Eliminar el token y el nombre del usuario al cerrar sesión
+    localStorage.removeItem('token');
+    localStorage.removeItem('userName');
+    
     toast({
       title: "Sesión cerrada",
       description: "Has cerrado sesión correctamente.",
     });
     navigate("/");
+  };
+
+  // Calcular cuántos eventos/bloques libres tiene hoy
+  const getAvailableBlocks = () => {
+    if (!userData || !userData.events) return 0;
+    
+    // Contar eventos que no son hábitos (son bloques libres)
+    return userData.events.filter(event => !event.is_habit).length;
   };
 
   return (
@@ -64,7 +178,7 @@ const Dashboard = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
-                  Alexandra
+                  {userName}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
@@ -85,18 +199,27 @@ const Dashboard = () => {
       <main className="container py-8">
         {/* Greeting section */}
         <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">¡Hola, Alexandra! 👋</h1>
-          <p className="text-gray-600">Hoy tienes 2 bloques libres para avanzar en tus metas 🌱</p>
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">¡Hola, {userName}! 👋</h1>
+          <p className="text-gray-600">
+            Hoy tienes {loading ? "..." : getAvailableBlocks()} bloques disponibles para avanzar en tus metas 🌱
+          </p>
         </div>
         
         {/* Quick action buttons */}
         <div className="flex flex-wrap gap-4 mb-8">
-          <Button className="bg-green-600 hover:bg-green-700">
+          <Button className="bg-green-600 hover:bg-green-700" onClick={() => setSelectedTab("calendar")}>
             <Calendar className="mr-2 h-4 w-4" /> Planear mi día
           </Button>
-          <Link to="/chat">
+          <Link to="/bot">
             <Button className="bg-green-600 hover:bg-green-700">
               <MessageSquare className="mr-2 h-4 w-4" /> Hablar con AgentIA
+            </Button>
+          </Link>
+          
+          {/* Botón directo para el chatbot integrado */}
+          <Link to="/dashboard/bot">
+            <Button className="bg-green-600 hover:bg-green-700">
+              <MessageSquare className="mr-2 h-4 w-4" /> Chat en Dashboard
             </Button>
           </Link>
         </div>
@@ -121,39 +244,65 @@ const Dashboard = () => {
                       <Calendar className="h-5 w-5 text-green-600" />
                       Tu día de hoy
                     </CardTitle>
-                    <CardDescription>Miércoles, 11 de mayo</CardDescription>
+                    <CardDescription>{todayDate}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <div className="p-3 rounded bg-green-50 border border-green-100 flex items-center">
-                        <div className="w-1 h-12 bg-green-600 rounded-full mr-3" />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">Reunión de diseño</p>
-                          <p className="text-xs text-gray-500">10:00 - 11:30 AM</p>
-                        </div>
-                      </div>
-                      <div className="p-3 rounded bg-green-50 border border-green-100 flex items-center">
-                        <div className="w-1 h-12 bg-green-400 rounded-full mr-3" />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">Tiempo para leer</p>
-                          <p className="text-xs text-gray-500">12:30 - 1:00 PM</p>
-                        </div>
-                        <div>
-                          <Button size="sm" variant="ghost" className="h-8 text-green-600">
-                            <Check className="h-4 w-4" />
+                      {loading ? (
+                        <p className="text-sm text-gray-500">Cargando eventos...</p>
+                      ) : userData && userData.events && userData.events.length > 0 ? (
+                        // Mostrar eventos reales
+                        userData.events.map(event => {
+                          // Formatear horario
+                          const start = new Date(event.start_datetime);
+                          const end = new Date(event.end_datetime);
+                          const timeStr = `${start.getHours()}:${start.getMinutes().toString().padStart(2, '0')} - ${end.getHours()}:${end.getMinutes().toString().padStart(2, '0')}`;
+                          
+                          if (event.is_habit) {
+                            // Es un hábito
+                            return (
+                              <div key={event.id} className="p-3 rounded bg-green-50 border border-green-100 flex items-center">
+                                <div className={`w-1 h-12 bg-${event.completed ? "green-600" : "green-400"} rounded-full mr-3`} />
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium">{event.title}</p>
+                                  <p className="text-xs text-gray-500">{timeStr}</p>
+                                </div>
+                                <div>
+                                  {event.completed ? (
+                                    <Button size="sm" variant="ghost" className="h-8 text-green-600">
+                                      <Check className="h-4 w-4" />
+                                    </Button>
+                                  ) : null}
+                                </div>
+                              </div>
+                            );
+                          } else {
+                            // Es un evento normal
+                            return (
+                              <div key={event.id} className="p-3 rounded bg-green-50 border border-green-100 flex items-center">
+                                <div className="w-1 h-12 bg-green-600 rounded-full mr-3" />
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium">{event.title}</p>
+                                  <p className="text-xs text-gray-500">{timeStr}</p>
+                                </div>
+                              </div>
+                            );
+                          }
+                        })
+                      ) : (
+                        // Si no hay eventos
+                        <div className="p-3 rounded bg-green-50/50 border border-dashed border-green-300 flex items-center">
+                          <div className="w-1 h-12 bg-green-300 rounded-full mr-3" />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-green-700">Bloque libre disponible</p>
+                            <p className="text-xs text-gray-500">No tienes eventos programados para hoy</p>
+                          </div>
+                          <Button size="sm" variant="outline" className="text-green-700 border-green-300" 
+                                  onClick={() => setSelectedTab("calendar")}>
+                            <PlusCircle className="h-4 w-4 mr-1" /> Agregar
                           </Button>
                         </div>
-                      </div>
-                      <div className="p-3 rounded bg-green-50/50 border border-dashed border-green-300 flex items-center">
-                        <div className="w-1 h-12 bg-green-300 rounded-full mr-3" />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-green-700">Bloque libre disponible</p>
-                          <p className="text-xs text-gray-500">3:00 - 4:00 PM</p>
-                        </div>
-                        <Button size="sm" variant="outline" className="text-green-700 border-green-300">
-                          <PlusCircle className="h-4 w-4 mr-1" /> Agregar
-                        </Button>
-                      </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -171,17 +320,34 @@ const Dashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Presupuesto mensual</span>
-                          <span className="font-medium">75%</span>
-                        </div>
-                        <Progress value={75} className="h-2 bg-green-100" />
-                      </div>
-                      <p className="text-sm text-green-600 mt-2">Consejo: Reducir gastos en comida a domicilio ahorraría ~$200</p>
-                      <Button size="sm" variant="outline" className="w-full mt-2 text-green-700 border-green-300">
-                        Ver finanzas
-                      </Button>
+                      {loading ? (
+                        <p className="text-sm text-gray-500">Cargando datos financieros...</p>
+                      ) : userData && userData.finance ? (
+                        <>
+                          <div>
+                            <div className="flex justify-between text-sm mb-1">
+                              <span>Presupuesto mensual</span>
+                              {/* Calcular % de presupuesto usado */}
+                              <span className="font-medium">
+                                {Math.min(Math.round((userData.finance.gastos_mes / (userData.finance.ingresos_mes || 1)) * 100), 100)}%
+                              </span>
+                            </div>
+                            <Progress 
+                              value={Math.min(Math.round((userData.finance.gastos_mes / (userData.finance.ingresos_mes || 1)) * 100), 100)} 
+                              className="h-2 bg-green-100"
+                            />
+                          </div>
+                          <p className="text-sm text-green-600 mt-2">
+                            Balance: ${userData.finance.ingresos_mes - userData.finance.gastos_mes}
+                          </p>
+                          <Button size="sm" variant="outline" className="w-full mt-2 text-green-700 border-green-300"
+                                 onClick={() => setSelectedTab("finance")}>
+                            Ver finanzas
+                          </Button>
+                        </>
+                      ) : (
+                        <p className="text-sm text-gray-500">No hay datos financieros disponibles</p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -196,25 +362,28 @@ const Dashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                            <Check className="h-4 w-4" />
+                      {loading ? (
+                        <p className="text-sm text-gray-500">Cargando hábitos...</p>
+                      ) : userData && userData.habits && userData.habits.length > 0 ? (
+                        // Mostrar hábitos reales
+                        userData.habits.slice(0, 3).map(habit => (
+                          <div key={habit.id} className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-8 h-8 rounded-full ${habit.completed_today ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'} flex items-center justify-center`}>
+                                <Check className="h-4 w-4" />
+                              </div>
+                              <span className="text-sm">{habit.name}</span>
+                            </div>
+                            <span className={`text-xs ${habit.current_streak > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'} px-2 py-1 rounded`}>
+                              {habit.current_streak > 0 ? `Racha: ${habit.current_streak} días` : 'Sin racha'}
+                            </span>
                           </div>
-                          <span className="text-sm">Leer 15 minutos</span>
-                        </div>
-                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">4/7 días</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
-                            <Check className="h-4 w-4" />
-                          </div>
-                          <span className="text-sm">Meditar 5 minutos</span>
-                        </div>
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">0/7 días</span>
-                      </div>
-                      <Button size="sm" variant="outline" className="w-full mt-2 text-green-700 border-green-300">
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-500">No tienes hábitos programados para hoy</p>
+                      )}
+                      <Button size="sm" variant="outline" className="w-full mt-2 text-green-700 border-green-300"
+                             onClick={() => setSelectedTab("habits")}>
                         Ver todos los hábitos
                       </Button>
                     </div>
@@ -241,9 +410,7 @@ const Dashboard = () => {
                         </Button>
                       ))}
                     </div>
-                    <p className="text-center text-sm italic text-green-700 mt-2">
-                      "Cada pequeño paso cuenta. ¡Sigues mejorando cada día!"
-                    </p>
+                    <p className="text-xs text-center text-green-600 italic">"Cada pequeño paso cuenta. ¡Sigues mejorando cada día!"</p>
                   </CardContent>
                 </Card>
               </div>

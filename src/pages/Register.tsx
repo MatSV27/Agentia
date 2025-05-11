@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,28 +5,70 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Leaf } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import config from "@/lib/config";
+import API_CONFIG from "@/config/api";
+
+// Interfaz para el manejo de errores
+interface FormErrors {
+  name?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+}
 
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const validateForm = () => {
+    const newErrors: FormErrors = {};
+    
+    if (!name) newErrors.name = "El nombre es requerido";
+    if (!email) newErrors.email = "El correo electrónico es requerido";
+    if (!password) newErrors.password = "La contraseña es requerida";
+    if (password !== confirmPassword) newErrors.confirmPassword = "Las contraseñas no coinciden";
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-    // Simulate registration - in a real app, this would be an API call
-    setTimeout(() => {
-      setIsLoading(false);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    
+    try {
+      const data = await API_CONFIG.fetchApi('/api/register', {
+        method: 'POST',
+        body: JSON.stringify({ name, email, password })
+      });
+      
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userName', data.name);
+      
       toast({
         title: "¡Registro exitoso!",
-        description: "¡Bienvenido/a a AgentIA! Tu cuenta ha sido creada.",
+        description: "Tu cuenta ha sido creada correctamente.",
       });
+      
       navigate("/dashboard");
-    }, 1000);
+    } catch (error: any) {
+      toast({
+        title: "Error al registrarse",
+        description: error.message || "Ocurrió un error al crear tu cuenta.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -44,27 +85,28 @@ const Register = () => {
 
         <Card className="border-green-100 shadow-md">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Crear Cuenta</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">Crear una cuenta</CardTitle>
             <CardDescription className="text-center">
-              Regístrate para comenzar a organizar tu vida
+              Ingresa tus datos para registrarte
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleRegister} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <label htmlFor="name" className="text-sm font-medium">
-                  Nombre
+                  Nombre completo
                 </label>
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Tu nombre"
+                  placeholder="Juan Pérez"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  required
-                  className="w-full minimalist-input"
+                  className={errors.name ? "border-red-500" : ""}
                 />
+                {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
               </div>
+              
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium">
                   Correo electrónico
@@ -75,10 +117,11 @@ const Register = () => {
                   placeholder="tu@ejemplo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full minimalist-input"
+                  className={errors.email ? "border-red-500" : ""}
                 />
+                {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
               </div>
+              
               <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium">
                   Contraseña
@@ -89,16 +132,34 @@ const Register = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full minimalist-input"
+                  className={errors.password ? "border-red-500" : ""}
                 />
+                {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
               </div>
-              <Button
-                type="submit"
+              
+              <div className="space-y-2">
+                <label htmlFor="confirmPassword" className="text-sm font-medium">
+                  Confirmar contraseña
+                </label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className={errors.confirmPassword ? "border-red-500" : ""}
+                />
+                {errors.confirmPassword && (
+                  <p className="text-xs text-red-500">{errors.confirmPassword}</p>
+                )}
+              </div>
+              
+              <Button 
+                type="submit" 
                 className="w-full bg-green-600 hover:bg-green-700"
                 disabled={isLoading}
               >
-                {isLoading ? "Creando cuenta..." : "Registrarse"}
+                {isLoading ? "Registrando..." : "Registrarse"}
               </Button>
             </form>
           </CardContent>
@@ -106,7 +167,7 @@ const Register = () => {
             <div className="text-center text-sm">
               ¿Ya tienes una cuenta?{" "}
               <Link to="/login" className="text-green-600 hover:text-green-800 font-medium">
-                Iniciar Sesión
+                Inicia sesión
               </Link>
             </div>
           </CardFooter>

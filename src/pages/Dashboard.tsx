@@ -1,18 +1,47 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, Check, DollarSign, Heart, ListCheck, MessageSquare, PlusCircle, Settings, TrendingUp, Leaf } from "lucide-react";
-import { Link } from "react-router-dom";
+import { 
+  Calendar, 
+  Check, 
+  DollarSign, 
+  Heart, 
+  ListCheck, 
+  MessageSquare, 
+  PlusCircle, 
+  Settings,
+  TrendingUp, 
+  Leaf,
+  LogOut,
+  User
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import FinanceModule from "@/components/modules/FinanceModule";
 import HabitModule from "@/components/modules/HabitModule";
 import WellbeingModule from "@/components/modules/WellbeingModule";
 import CalendarModule from "@/components/modules/CalendarModule";
+import { useToast } from "@/components/ui/use-toast";
 
 const Dashboard = () => {
   const [selectedTab, setSelectedTab] = useState("overview");
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const handleLogout = () => {
+    toast({
+      title: "Sesión cerrada",
+      description: "Has cerrado sesión correctamente.",
+    });
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-green-50">
@@ -31,9 +60,24 @@ const Dashboard = () => {
               <Settings className="mr-1 h-4 w-4" /> 
               Configuración
             </Button>
-            <Button variant="outline" size="sm" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
-              Alexandra
-            </Button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
+                  Alexandra
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => navigate("/profile")}>
+                  <User className="mr-2 h-4 w-4" />
+                  Ver perfil
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Cerrar sesión
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
@@ -55,12 +99,6 @@ const Dashboard = () => {
               <MessageSquare className="mr-2 h-4 w-4" /> Hablar con AgentIA
             </Button>
           </Link>
-          <Button variant="outline" className="border-green-300 text-green-700 hover:bg-green-50">
-            <PlusCircle className="mr-2 h-4 w-4" /> Agregar hábito
-          </Button>
-          <Button variant="outline" className="border-green-300 text-green-700 hover:bg-green-50">
-            <DollarSign className="mr-2 h-4 w-4" /> Registrar gasto
-          </Button>
         </div>
         
         {/* Tabs for different views */}

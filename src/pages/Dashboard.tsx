@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, Check, DollarSign, Heart, ListCheck, PlusCircle, Settings, TrendingUp } from "lucide-react";
+import { Calendar, Check, DollarSign, Heart, ListCheck, MessageSquare, PlusCircle, Settings, TrendingUp } from "lucide-react";
+import { Link } from "react-router-dom";
 import FinanceModule from "@/components/modules/FinanceModule";
 import HabitModule from "@/components/modules/HabitModule";
 import WellbeingModule from "@/components/modules/WellbeingModule";
@@ -47,6 +48,11 @@ const Dashboard = () => {
           <Button className="bg-green-600 hover:bg-green-700">
             <Calendar className="mr-2 h-4 w-4" /> Planear mi día
           </Button>
+          <Link to="/chat">
+            <Button className="bg-green-600 hover:bg-green-700">
+              <MessageSquare className="mr-2 h-4 w-4" /> Hablar con IA Coach
+            </Button>
+          </Link>
           <Button variant="outline" className="border-green-300 text-green-700 hover:bg-green-50">
             <PlusCircle className="mr-2 h-4 w-4" /> Agregar hábito
           </Button>

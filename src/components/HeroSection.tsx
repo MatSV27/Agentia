@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Calendar, MessageCircle, Check } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
@@ -22,8 +23,8 @@ const HeroSection = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
-            <Button size="lg" className="bg-brand-purple hover:bg-brand-purple/90">
-              Comenzar Gratis
+            <Button size="lg" className="bg-brand-purple hover:bg-brand-purple/90" asChild>
+              <Link to="/dashboard">Comenzar Gratis</Link>
             </Button>
             <Button size="lg" variant="outline">
               Ver Demo

@@ -130,3 +130,26 @@
 .hover-scale-subtle {
   @apply transition-transform duration-200 hover:scale-[1.02];
 }
+
+/* Seed icon animation */
+.seed-icon {
+  @apply relative;
+}
+
+.seed-icon::before {
+  content: '';
+  @apply absolute top-[-5px] left-[-5px] right-[-5px] bottom-[-5px] bg-green-200 rounded-full opacity-0 scale-0 transition-all duration-500;
+}
+
+.seed-icon:hover::before {
+  @apply opacity-50 scale-100;
+}
+
+/* Minimalist UI elements */
+.minimalist-input {
+  @apply border-0 border-b border-green-300 focus:border-green-600 rounded-none bg-transparent px-0 py-2 focus:ring-0 transition-colors;
+}
+
+.minimalist-card {
+  @apply bg-white border border-gray-100 shadow-sm rounded-lg p-6 hover:shadow-md transition-shadow;
+}

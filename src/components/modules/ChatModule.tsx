@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Send, Calendar, ListCheck, Heart, DollarSign, Check } from "lucide-react";
+import { Send, Calendar, ListCheck, Heart, DollarSign, Check, Leaf } from "lucide-react";
 
 type MessageType = {
   id: number;
@@ -21,9 +21,15 @@ const ChatModule = () => {
   const [messages, setMessages] = useState<MessageType[]>([
     {
       id: 1,
-      text: "¡Hola Alexandra! ¿En qué puedo ayudarte hoy?",
+      text: "¡Hola Alexandra! Soy tu coach personal. ¿Cómo te sientes hoy?",
       sender: "bot",
       timestamp: new Date(),
+      options: [
+        { text: "Bien, listo para avanzar.", action: "ready_to_advance" },
+        { text: "Necesito ayuda para organizar mi día.", action: "organize_day" },
+        { text: "¿Cómo puedo mejorar mis hábitos hoy?", action: "improve_habits" },
+        { text: "Revisemos mis finanzas.", action: "review_finances" },
+      ],
     },
   ]);
   const [inputValue, setInputValue] = useState("");
@@ -116,17 +122,17 @@ const ChatModule = () => {
     } else if (userInput.includes("dinero") || userInput.includes("gasto") || userInput.includes("finanza")) {
       return {
         id,
-        text: "Analizando tus gastos recientes, he notado que gastas un 25% más en comida a domicilio que el mes pasado. Si reduces esto, podrías ahorrar aproximadamente $200 este mes. ¿Quieres establecer un límite de gasto para esta categoría?",
+        text: "¿Quieres registrar algún gasto hoy?",
         sender: "bot",
         timestamp: new Date(),
         options: [
           { 
-            text: "Establecer límite", 
-            action: "set_spending_limit", 
+            text: "Sí, registrar un gasto", 
+            action: "register_expense", 
             icon: <DollarSign className="h-4 w-4" /> 
           },
           { 
-            text: "Ver detalle de gastos", 
+            text: "Ver mis estadísticas de gastos", 
             action: "view_expenses", 
             icon: <DollarSign className="h-4 w-4" /> 
           },
@@ -148,6 +154,19 @@ const ChatModule = () => {
           { text: "😐 Normal", action: "feeling_neutral" },
           { text: "😓 Cansado/a", action: "feeling_tired" },
           { text: "😢 Mal", action: "feeling_bad" },
+        ],
+      };
+    } else if (userInput.includes("meta") || userInput.includes("objetivo")) {
+      return {
+        id,
+        text: "¿Tienes alguna meta en mente para hoy? Por ejemplo, 'Leer 30 minutos' o 'Meditar 10 minutos'.",
+        sender: "bot",
+        timestamp: new Date(),
+        options: [
+          { text: "Leer 30 minutos", action: "add_reading_goal" },
+          { text: "Meditar 10 minutos", action: "add_meditation_goal" },
+          { text: "Ejercicio 20 minutos", action: "add_exercise_goal" },
+          { text: "Otra meta", action: "custom_goal" },
         ],
       };
     } else if (userInput.includes("gracias")) {
@@ -205,6 +224,115 @@ const ChatModule = () => {
       let botResponse: MessageType;
 
       switch (option.action) {
+        case "ready_to_advance":
+          botResponse = {
+            id: messages.length + 2,
+            text: "¡Genial! ¿Quieres que revisemos tu agenda para hoy o prefieres enfocarte en alguna meta específica?",
+            sender: "bot",
+            timestamp: new Date(),
+            options: [
+              { text: "Revisar agenda", action: "check_availability", icon: <Calendar className="h-4 w-4" /> },
+              { text: "Establecer nueva meta", action: "set_goal", icon: <ListCheck className="h-4 w-4" /> },
+            ],
+          };
+          break;
+        
+        case "organize_day":
+          botResponse = {
+            id: messages.length + 2,
+            text: "Puedo ayudarte con eso. Veo que tienes dos bloques libres hoy: 11:30 AM - 12:30 PM y 3:15 - 4:00 PM. ¿Te gustaría programar alguna actividad en estos horarios?",
+            sender: "bot",
+            timestamp: new Date(),
+            options: [
+              { text: "Usar bloque de 11:30 AM", action: "schedule_morning", icon: <Calendar className="h-4 w-4" /> },
+              { text: "Usar bloque de 3:15 PM", action: "schedule_afternoon", icon: <Calendar className="h-4 w-4" /> },
+              { text: "Ver todas mis tareas pendientes", action: "view_tasks" },
+            ],
+          };
+          break;
+        
+        case "improve_habits":
+          botResponse = {
+            id: messages.length + 2,
+            text: "¿Cómo te fue con tu hábito de lectura ayer?",
+            sender: "bot",
+            timestamp: new Date(),
+            options: [
+              { text: "Lo completé", action: "habit_completed" },
+              { text: "No lo hice", action: "habit_missed" },
+              { text: "Quiero añadir un nuevo hábito", action: "add_new_habit" },
+            ],
+          };
+          break;
+          
+        case "review_finances":
+          botResponse = {
+            id: messages.length + 2,
+            text: "Tu gasto total esta semana ha sido de S/150. ¡Lo bueno es que todavía puedes ahorrar un 10% esta semana! ¿Te gustaría revisar tus categorías y ver dónde puedes ajustar?",
+            sender: "bot",
+            timestamp: new Date(),
+            options: [
+              { text: "Sí, ver categorías", action: "view_expense_categories" },
+              { text: "Registrar un nuevo gasto", action: "register_expense" },
+              { text: "No, está bien por ahora", action: "dismiss" },
+            ],
+          };
+          break;
+          
+        case "register_expense":
+          botResponse = {
+            id: messages.length + 2,
+            text: "¿Cuánto gastaste y en qué categoría?",
+            sender: "bot",
+            timestamp: new Date(),
+            options: [
+              { text: "S/50 en comida", action: "expense_food" },
+              { text: "S/30 en transporte", action: "expense_transport" },
+              { text: "S/100 en entretenimiento", action: "expense_entertainment" },
+              { text: "Otro monto/categoría", action: "custom_expense" },
+            ],
+          };
+          break;
+          
+        case "expense_food":
+          botResponse = {
+            id: messages.length + 2,
+            text: "¡Perfecto! ¿Te gustaría añadir este gasto a tu categoría 'Comida' o crear una nueva categoría?",
+            sender: "bot",
+            timestamp: new Date(),
+            options: [
+              { text: "Añadir a Comida", action: "add_to_food_category" },
+              { text: "Crear nueva categoría", action: "create_new_category" },
+            ],
+          };
+          break;
+          
+        case "add_to_food_category":
+          botResponse = {
+            id: messages.length + 2,
+            text: "He registrado el gasto de S/50. ¿Te gustaría ahorrar en esta categoría la próxima semana? Si necesitas recomendaciones, solo dime.",
+            sender: "bot",
+            timestamp: new Date(),
+            options: [
+              { text: "Sí, dame recomendaciones", action: "saving_recommendations" },
+              { text: "No, gracias", action: "dismiss" },
+            ],
+          };
+          break;
+          
+        case "saving_recommendations":
+          botResponse = {
+            id: messages.length + 2,
+            text: "Aquí tienes algunas recomendaciones para ahorrar en comida:\n\n1. Planifica tus comidas semanalmente\n2. Cocina en lotes\n3. Aprovecha ofertas en supermercados\n4. Limita las comidas a domicilio a una vez por semana\n\n¿Te gustaría que te ayude a establecer un presupuesto semanal para comida?",
+            sender: "bot",
+            timestamp: new Date(),
+            options: [
+              { text: "Sí, establece un presupuesto", action: "set_food_budget" },
+              { text: "No, gracias", action: "dismiss" },
+            ],
+          };
+          break;
+        
         case "schedule_morning":
           botResponse = {
             id: messages.length + 2,
@@ -279,18 +407,72 @@ const ChatModule = () => {
             ],
           };
           break;
-        case "set_spending_limit":
+          
+        case "habit_missed":
           botResponse = {
             id: messages.length + 2,
-            text: "He establecido un límite de $150 para gastos en comida a domicilio este mes. Te avisaré cuando te acerques a este límite. ¿Te parece bien esta cantidad?",
+            text: "No pasa nada, todos tenemos días difíciles. ¿Te gustaría hacer algo pequeño hoy para retomarlo?",
             sender: "bot",
             timestamp: new Date(),
             options: [
-              { text: "Sí, perfecto", action: "confirm_limit" },
-              { text: "Ajustar límite", action: "adjust_limit" },
+              { text: "Sí, quiero intentarlo hoy", action: "retry_habit_today" },
+              { text: "No, quiero hablar de otro hábito", action: "discuss_other_habit" },
             ],
           };
           break;
+          
+        case "retry_habit_today":
+          botResponse = {
+            id: messages.length + 2,
+            text: "¡Genial actitud! ¿Qué te parece si empezamos con solo 5 minutos de lectura hoy? A veces dar el primer paso es lo más importante.",
+            sender: "bot",
+            timestamp: new Date(),
+            options: [
+              { text: "Sí, 5 minutos suena bien", action: "schedule_mini_habit" },
+              { text: "Prefiero intentar los 15 minutos completos", action: "schedule_full_habit" },
+            ],
+          };
+          break;
+          
+        case "habit_completed":
+          botResponse = {
+            id: messages.length + 2,
+            text: "¡Felicidades! Tu racha de hábitos sigue en 6 días. ¡Vamos a por el séptimo! ¿Te gustaría que analicemos cómo mejorar aún más este hábito?",
+            sender: "bot",
+            timestamp: new Date(),
+            options: [
+              { text: "Sí, quiero optimizarlo", action: "optimize_habit" },
+              { text: "No, estoy conforme con mi progreso", action: "maintain_habit" },
+            ],
+          };
+          break;
+          
+        case "add_reading_goal":
+          botResponse = {
+            id: messages.length + 2,
+            text: "¡Genial! He añadido 'Leer 30 minutos' a tus metas de hoy. ¿Te gustaría que te sugiera un momento del día para hacerlo?",
+            sender: "bot",
+            timestamp: new Date(),
+            options: [
+              { text: "Sí, ¿cuándo debería hacerlo?", action: "suggest_reading_time" },
+              { text: "No, yo decidiré", action: "self_schedule" },
+            ],
+          };
+          break;
+          
+        case "suggest_reading_time":
+          botResponse = {
+            id: messages.length + 2,
+            text: "Basado en tus horarios anteriores, parece que podrías hacerlo a las 7 p.m., cuando tienes más tiempo libre. ¿Te parece bien?",
+            sender: "bot",
+            timestamp: new Date(),
+            options: [
+              { text: "Sí, perfecto", action: "confirm_reading_time" },
+              { text: "No, prefiero otro horario", action: "change_reading_time" },
+            ],
+          };
+          break;
+        
         case "feeling_great":
         case "feeling_good":
           botResponse = {
@@ -330,6 +512,44 @@ const ChatModule = () => {
             ],
           };
           break;
+        case "suggest_relaxation":
+          botResponse = {
+            id: messages.length + 2,
+            text: "Veo que estás trabajando duro hoy. ¿Te gustaría tomar un descanso para cuidar tu vista? Toma 30 segundos para parpadear 20 veces, luego mira algo a lo lejos.",
+            sender: "bot",
+            timestamp: new Date(),
+            options: [
+              { text: "Sí, lo haré", action: "do_eye_rest" },
+              { text: "No, estoy bien por ahora", action: "dismiss" },
+            ],
+          };
+          break;
+        case "do_eye_rest":
+          botResponse = {
+            id: messages.length + 2,
+            text: "¡Excelente! Tomar estos pequeños descansos mejora tu productividad y salud a largo plazo. ¿Te gustaría que configure recordatorios periódicos para estos descansos?",
+            sender: "bot",
+            timestamp: new Date(),
+            options: [
+              { text: "Sí, cada hora", action: "set_hourly_breaks" },
+              { text: "Sí, cada dos horas", action: "set_two_hour_breaks" },
+              { text: "No, gracias", action: "dismiss" },
+            ],
+          };
+          break;
+        case "view_expense_categories":
+          botResponse = {
+            id: messages.length + 2,
+            text: "Aquí están tus categorías de gastos de esta semana:\n\n🍔 Comida: S/80\n🚌 Transporte: S/35\n🎬 Entretenimiento: S/25\n📱 Servicios: S/10\n\nDonde podrías ahorrar más es en la categoría de comida, reduciendo pedidos a domicilio.",
+            sender: "bot",
+            timestamp: new Date(),
+            options: [
+              { text: "Mostrar consejos de ahorro", action: "saving_tips" },
+              { text: "Comparar con semana anterior", action: "compare_expenses" },
+              { text: "Volver", action: "dismiss" },
+            ],
+          };
+          break;
         case "dismiss":
         default:
           botResponse = {
@@ -337,6 +557,12 @@ const ChatModule = () => {
             text: "Entendido. ¿Hay algo más en lo que pueda ayudarte hoy?",
             sender: "bot",
             timestamp: new Date(),
+            options: [
+              { text: "Ver mi disponibilidad", action: "check_availability", icon: <Calendar className="h-4 w-4" /> },
+              { text: "Sugerir nuevo hábito", action: "suggest_habit", icon: <ListCheck className="h-4 w-4" /> },
+              { text: "Analizar mis finanzas", action: "analyze_finances", icon: <DollarSign className="h-4 w-4" /> },
+              { text: "Registrar cómo me siento", action: "log_feeling", icon: <Heart className="h-4 w-4" /> },
+            ],
           };
           break;
       }
@@ -352,18 +578,23 @@ const ChatModule = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-green-800">Coach Diario</h2>
+        <h2 className="text-2xl font-bold text-green-800 flex items-center">
+          <Leaf className="mr-2 h-5 w-5 text-green-600" /> Coach Personal
+        </h2>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3">
-          <Card className="h-[600px] flex flex-col">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Conversación con tu asistente
+          <Card className="h-[600px] flex flex-col shadow-sm border-green-100">
+            <CardHeader className="pb-2 border-b border-green-50">
+              <CardTitle className="flex items-center gap-2 text-green-800">
+                <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center text-white">
+                  <Leaf className="h-4 w-4" />
+                </div>
+                Conversación con AgentIA
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col overflow-hidden">
+            <CardContent className="flex-1 flex flex-col overflow-hidden pt-4">
               <div className="flex-1 overflow-auto mb-4 pr-2">
                 {messages.map((message) => (
                   <div
@@ -390,7 +621,7 @@ const ChatModule = () => {
                               key={index}
                               size="sm"
                               variant={message.sender === "user" ? "secondary" : "outline"}
-                              className="text-xs flex items-center gap-1 bg-white text-green-700 border-green-200"
+                              className="text-xs flex items-center gap-1 bg-white text-green-700 border-green-200 hover:bg-green-50"
                               onClick={() => handleOptionClick(option)}
                             >
                               {option.icon && option.icon}
@@ -411,7 +642,7 @@ const ChatModule = () => {
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Escribe un mensaje..."
-                  className="flex-1"
+                  className="flex-1 border-green-200 focus:border-green-400"
                 />
                 <Button
                   onClick={handleSendMessage}
@@ -425,15 +656,15 @@ const ChatModule = () => {
         </div>
         
         <div>
-          <Card>
+          <Card className="border-green-100 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-base">Sugerencias</CardTitle>
+              <CardTitle className="text-base text-green-800">Sugerencias</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left border-green-200 text-green-700"
+                  className="w-full justify-start text-left border-green-200 text-green-700 hover:bg-green-50"
                   onClick={() => {
                     setInputValue("¿Cuál es mi disponibilidad hoy?");
                     handleSendMessage();
@@ -445,7 +676,7 @@ const ChatModule = () => {
                 
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left border-green-200 text-green-700"
+                  className="w-full justify-start text-left border-green-200 text-green-700 hover:bg-green-50"
                   onClick={() => {
                     setInputValue("Recomiéndame un nuevo hábito");
                     handleSendMessage();
@@ -457,19 +688,19 @@ const ChatModule = () => {
                 
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left border-green-200 text-green-700"
+                  className="w-full justify-start text-left border-green-200 text-green-700 hover:bg-green-50"
                   onClick={() => {
-                    setInputValue("Analiza mis finanzas");
+                    setInputValue("Registrar un gasto");
                     handleSendMessage();
                   }}
                 >
                   <DollarSign className="h-4 w-4 mr-2" />
-                  Analiza mis finanzas
+                  Registrar un gasto
                 </Button>
                 
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left border-green-200 text-green-700"
+                  className="w-full justify-start text-left border-green-200 text-green-700 hover:bg-green-50"
                   onClick={() => {
                     setInputValue("Así me siento hoy");
                     handleSendMessage();
@@ -482,9 +713,9 @@ const ChatModule = () => {
             </CardContent>
           </Card>
           
-          <Card className="mt-6">
+          <Card className="mt-6 border-green-100 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-base">Recordatorios</CardTitle>
+              <CardTitle className="text-base text-green-800">Recordatorios</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">

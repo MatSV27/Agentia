@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, Check, DollarSign, Heart, ListCheck, MessageSquare, PlusCircle, Settings, TrendingUp } from "lucide-react";
+import { Calendar, Check, DollarSign, Heart, ListCheck, MessageSquare, PlusCircle, Settings, TrendingUp, Leaf } from "lucide-react";
 import { Link } from "react-router-dom";
 import FinanceModule from "@/components/modules/FinanceModule";
 import HabitModule from "@/components/modules/HabitModule";
@@ -20,8 +20,10 @@ const Dashboard = () => {
       <header className="py-4 bg-white border-b shadow-sm sticky top-0 z-50">
         <div className="container flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md bg-brand-purple text-white flex items-center justify-center font-bold">P</div>
-            <span className="text-xl font-bold">PlannerAI</span>
+            <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold seed-icon">
+              <Leaf className="h-5 w-5" />
+            </div>
+            <span className="text-xl font-bold">AgentIA</span>
           </div>
           
           <div className="flex items-center gap-3">
@@ -40,7 +42,7 @@ const Dashboard = () => {
         {/* Greeting section */}
         <div className="mb-8">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">¡Hola, Alexandra! 👋</h1>
-          <p className="text-gray-600">Hoy tienes 2 bloques libres para avanzar en tus metas 🎯</p>
+          <p className="text-gray-600">Hoy tienes 2 bloques libres para avanzar en tus metas 🌱</p>
         </div>
         
         {/* Quick action buttons */}
@@ -50,7 +52,7 @@ const Dashboard = () => {
           </Button>
           <Link to="/chat">
             <Button className="bg-green-600 hover:bg-green-700">
-              <MessageSquare className="mr-2 h-4 w-4" /> Hablar con IA Coach
+              <MessageSquare className="mr-2 h-4 w-4" /> Hablar con AgentIA
             </Button>
           </Link>
           <Button variant="outline" className="border-green-300 text-green-700 hover:bg-green-50">
@@ -75,7 +77,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Left column - Calendar preview */}
               <div className="md:col-span-2">
-                <Card>
+                <Card className="border-green-100 shadow-sm">
                   <CardHeader className="pb-2">
                     <CardTitle className="flex items-center gap-2">
                       <Calendar className="h-5 w-5 text-green-600" />
@@ -89,14 +91,14 @@ const Dashboard = () => {
                         <div className="w-1 h-12 bg-green-600 rounded-full mr-3" />
                         <div className="flex-1">
                           <p className="text-sm font-medium">Reunión de diseño</p>
-                          <p className="text-xs text-muted-foreground">10:00 - 11:30 AM</p>
+                          <p className="text-xs text-gray-500">10:00 - 11:30 AM</p>
                         </div>
                       </div>
                       <div className="p-3 rounded bg-green-50 border border-green-100 flex items-center">
                         <div className="w-1 h-12 bg-green-400 rounded-full mr-3" />
                         <div className="flex-1">
                           <p className="text-sm font-medium">Tiempo para leer</p>
-                          <p className="text-xs text-muted-foreground">12:30 - 1:00 PM</p>
+                          <p className="text-xs text-gray-500">12:30 - 1:00 PM</p>
                         </div>
                         <div>
                           <Button size="sm" variant="ghost" className="h-8 text-green-600">
@@ -108,7 +110,7 @@ const Dashboard = () => {
                         <div className="w-1 h-12 bg-green-300 rounded-full mr-3" />
                         <div className="flex-1">
                           <p className="text-sm font-medium text-green-700">Bloque libre disponible</p>
-                          <p className="text-xs text-muted-foreground">3:00 - 4:00 PM</p>
+                          <p className="text-xs text-gray-500">3:00 - 4:00 PM</p>
                         </div>
                         <Button size="sm" variant="outline" className="text-green-700 border-green-300">
                           <PlusCircle className="h-4 w-4 mr-1" /> Agregar
@@ -122,7 +124,7 @@ const Dashboard = () => {
               {/* Right column - Quick widgets */}
               <div className="space-y-6">
                 {/* Finance widget */}
-                <Card>
+                <Card className="border-green-100 shadow-sm">
                   <CardHeader className="pb-2">
                     <CardTitle className="flex items-center gap-2 text-base">
                       <DollarSign className="h-5 w-5 text-green-600" />
@@ -147,7 +149,7 @@ const Dashboard = () => {
                 </Card>
                 
                 {/* Habit widget */}
-                <Card>
+                <Card className="border-green-100 shadow-sm">
                   <CardHeader className="pb-2">
                     <CardTitle className="flex items-center gap-2 text-base">
                       <ListCheck className="h-5 w-5 text-green-600" />
@@ -182,7 +184,7 @@ const Dashboard = () => {
                 </Card>
                 
                 {/* Emotional state widget */}
-                <Card>
+                <Card className="border-green-100 shadow-sm">
                   <CardHeader className="pb-2">
                     <CardTitle className="flex items-center gap-2 text-base">
                       <Heart className="h-5 w-5 text-green-600" />
@@ -202,7 +204,7 @@ const Dashboard = () => {
                       ))}
                     </div>
                     <p className="text-center text-sm italic text-green-700 mt-2">
-                      "El éxito no es final, el fracaso no es fatal: es el coraje de continuar lo que cuenta."
+                      "Cada pequeño paso cuenta. ¡Sigues mejorando cada día!"
                     </p>
                   </CardContent>
                 </Card>
@@ -211,7 +213,7 @@ const Dashboard = () => {
             
             {/* Module insights row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 shadow-sm">
                 <CardContent className="pt-6">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-green-600/10 flex items-center justify-center">
@@ -225,7 +227,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 shadow-sm">
                 <CardContent className="pt-6">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-green-600/10 flex items-center justify-center">
@@ -239,7 +241,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 shadow-sm">
                 <CardContent className="pt-6">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-green-600/10 flex items-center justify-center">
@@ -253,7 +255,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
               
-              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 shadow-sm">
                 <CardContent className="pt-6">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-green-600/10 flex items-center justify-center">

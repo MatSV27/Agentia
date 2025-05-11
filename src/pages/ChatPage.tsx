@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, ListCheck, Heart, DollarSign, Settings, MessageSquare } from "lucide-react";
+import { Calendar, ListCheck, Heart, DollarSign, Settings, MessageSquare, Check, Leaf } from "lucide-react";
 import ChatModule from "@/components/modules/ChatModule";
 import FinanceModule from "@/components/modules/FinanceModule";
 import HabitModule from "@/components/modules/HabitModule";
@@ -18,8 +18,10 @@ const ChatPage = () => {
       <header className="py-4 bg-white border-b shadow-sm sticky top-0 z-50">
         <div className="container flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md bg-brand-purple text-white flex items-center justify-center font-bold">P</div>
-            <span className="text-xl font-bold">PlannerAI</span>
+            <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold seed-icon">
+              <Leaf className="h-5 w-5" />
+            </div>
+            <span className="text-xl font-bold">AgentIA</span>
           </div>
           
           <div className="flex items-center gap-3">
